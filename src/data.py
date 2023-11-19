@@ -31,7 +31,7 @@ class DiceImageDataset(Dataset):
         self.images = [(x, x.parent.name) for x in self.img_dirpath.glob(f'*/**/*.{self.img_extension}')]
 
         # -------- transformers ---------
-        self.transform = Compose([Resize(224), Normalize(127.5, 127.5)])
+        self.transform = Compose([Resize((224, 224)), Normalize(127.5, 127.5)])
         self.target_transform = LabelTransformer([x[1] for x in self.images])
 
     def __len__(self):
