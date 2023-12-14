@@ -1,7 +1,6 @@
 import torch
 from torch import nn
 
-
 device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available()else "cpu")
 print(f"Using {device} device")
 
@@ -53,6 +52,10 @@ class SimpleCNN(nn.Module):
 
 
 if __name__ == '__main__':
+    from src import ROOT_DIR
+
     # Instantiate the model
     model = SimpleCNN(num_classes=6).to(device)
+    model_filepath = ROOT_DIR / 'models' / 'simple-cnn.pb'
+    torch.save(model, model_filepath)
     print(model)
