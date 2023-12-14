@@ -5,9 +5,9 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from src.data import DiceImageDataset
+from src.data.data import DiceImageDataset
 
-model_filepath = Path('../models/first_model.pb')
+model_filepath = Path('../../models/first_model.pb')
 model = torch.load(model_filepath)
 
 

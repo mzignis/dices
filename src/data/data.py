@@ -24,7 +24,7 @@ class LabelTransformer:
 
 
 class DiceImageDataset(Dataset):
-    def __init__(self, img_dirpath: [Path, str], img_extension: str = 'jpg', transform=None):
+    def __init__(self, img_dirpath: [Path, str], img_extension: str = 'jpg'):
         # -------- images --------
         self.img_dirpath = Path(img_dirpath).resolve()
         self.img_extension: str = img_extension
