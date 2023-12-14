@@ -1,12 +1,13 @@
-import numpy as np
+from pathlib import Path
 
-from src.models import SimpleCNN
-from src.data import DiceImageDataset
+import numpy as np
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from pathlib import Path
 from tqdm import tqdm
+
+# from src.models.models import SimpleCNN
+from src.data import DiceImageDataset
 
 
 def train_loop(dataloader, model, loss_fn, opt):
@@ -59,11 +60,11 @@ if __name__ == '__main__':
     device = ("cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
 
     learning_rate = 1e-3
-    batch_size = 64
-    epochs = 5
+    batch_size = 32
+    epochs = 10
 
     # -------- load model --------
-    model_dice = SimpleCNN(6)
+    model_dice = torch.load(Path('../models/first_model.pb'))
 
     # -------- dataset --------
     ds_train = DiceImageDataset('../data/dice/train')
@@ -80,7 +81,8 @@ if __name__ == '__main__':
         print(f"Epoch {t+1}\n-------------------------------")
         train_loop(dataloader_train, model_dice, loss_function, optimizer)
         test_loop(dataloader_valid, model_dice, loss_function)
+        torch.save(model_dice, Path('../models/first_model.pb'))
         print()
-    print("Done!")
 
-    torch.save(model_dice.state_dict(), Path('../models/first_model.pth'))
+    print("Done!")
+    torch.save(model_dice, Path('../models/first_model.pb'))
