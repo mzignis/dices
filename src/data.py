@@ -2,8 +2,8 @@ from pathlib import Path
 
 import numpy as np
 from torch.utils.data import Dataset
-from torchvision.io import read_image
-from torchvision.transforms import Compose, Resize, Normalize
+from torchvision.transforms import Compose, Resize, ToTensor, CenterCrop
+import PIL
 
 
 class LabelTransformer:
@@ -31,7 +31,11 @@ class DiceImageDataset(Dataset):
         self.images = [(x, x.parent.name) for x in self.img_dirpath.glob(f'*/**/*.{self.img_extension}')]
 
         # -------- transformers ---------
-        self.transform = Compose([Resize((224, 224)), Normalize(127.5, 127.5)])
+        self.transform = Compose([
+            Resize(256),
+            CenterCrop(224),
+            ToTensor(),
+        ])
         self.target_transform = LabelTransformer([x[1] for x in self.images])
 
     def __len__(self):
@@ -41,7 +45,7 @@ class DiceImageDataset(Dataset):
         img_path = self.images[idx][0]
         label = self.images[idx][1]
 
-        image = read_image(str(img_path)).float()
+        image = PIL.Image.open(str(img_path))
 
         if self.transform:
             image = self.transform(image)
@@ -65,6 +69,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=1, ncols=4, figsize=(5, 2))
     for ii, (img, lbl) in enumerate(zip(train_images, train_labels)):
         ax[ii].imshow(img.permute(1, 2, 0))
+        print(img.min(), img.max())
         ax[ii].set_title(ds_train.target_transform.num_to_label(lbl))
         ax[ii].set_xticks([])
         ax[ii].set_yticks([])
