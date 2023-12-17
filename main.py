@@ -11,6 +11,7 @@ from src.data.data import DiceImageDataset
 from src.training.classifier import train_loop, test_loop
 from src.models.simple_cnn import SimpleCNN
 
+
 # -------- parse arguments --------
 parser = argparse.ArgumentParser(description='Train a classifier')
 parser.add_argument('--model', type=str, help='Path to model file', required=True)
@@ -19,12 +20,25 @@ parser.add_argument('--data', type=str, help='Path to data directory', required=
 parser.add_argument('--epochs', type=int, help='Number of epochs', default=10)
 parser.add_argument('--batch_size', type=int, help='Batch size', default=32)
 parser.add_argument('--learning_rate', type=float, help='Learning rate', default=1e-3)
+parser.add_argument('--training_steps', type=int, help='Number of traininig steps per epoch', default=None)
+parser.add_argument('--validation_steps', type=int, help='Number of validation steps per epoch', default=None)
+parser.add_argument('--device', type=str, help='Device to use')
 
 parser.add_argument('--output', type=str, help='Path to output directory', default=None)
 
 parser.add_argument('--name', type=str, help='Name of the run', default=None)
 
 args = parser.parse_args()
+
+# -------- device --------
+if args.device:
+    device = torch.device(args.device)
+else:
+    is_available = torch.backends.mps.is_available() and torch.backends.mps.is_built()
+    device = torch.device("mps" if is_available else "cpu")
+
+print(f"Using {device} device")
+
 
 # -------- mlflow --------
 experiment_name = "dice_classifier"
@@ -47,7 +61,7 @@ epochs = args.epochs
 # -------- load model --------
 model_filepath = Path(args.model).resolve()
 print("model exists:", model_filepath.exists())
-model_dice = torch.load(model_filepath)
+model_dice = torch.load(model_filepath).to(device)
 
 # -------- dataset --------
 data_dirpath = Path(args.data).resolve()
@@ -70,11 +84,17 @@ with mlflow.start_run(experiment_id=experiment_id, run_name=run_name):
     mlflow.log_param("data_dirpath", data_dirpath)
 
     # -------- training loop --------
-    output_filepath = Path(args.output).resolve() if args.output else None
-    for t in range(epochs):
-        print(f"Epoch {t + 1}\n-------------------------------")
-        train_loop(dataloader_train, model_dice, loss_function, optimizer)
-        test_loop(dataloader_valid, model_dice, loss_function)
+    output_filepath = Path(args.output).resolve() if args.output else Path("models") / f"{run_name}.pb"
+    for epoch in range(epochs):
+        print(f"Epoch {epoch + 1}\n-------------------------------")
+        train_loop(
+            dataloader_train, model_dice, loss_function, optimizer,
+            steps=args.training_steps, epoch=epoch, device=device,
+        )
+        test_loop(
+            dataloader_valid, model_dice, loss_function,
+            steps=args.validation_steps, epoch=epoch, device=device,
+        )
         if output_filepath:
             torch.save(model_dice, output_filepath)
         print()
