@@ -50,7 +50,8 @@ class CustomMobileNetV2(nn.Module):
 if __name__ == '__main__':
     from src import ROOT_DIR
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    is_available = torch.backends.mps.is_available() and torch.backends.mps.is_built()
+    device = torch.device("mps" if is_available else "cpu")
     print(f"Using {device} device")
 
     # Instantiate the model

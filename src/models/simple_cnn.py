@@ -1,9 +1,6 @@
 import torch
 from torch import nn
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"Using {device} device")
-
 
 class SimpleCNN(nn.Module):
     def __init__(self, num_classes: int = 10):
