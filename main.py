@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 from src.data.data import DiceImageDataset
 from src.training.classifier import train_loop, test_loop
-from src.models.simple_cnn import SimpleCNN
+from src.models import *
 
 
 # -------- parse arguments --------
